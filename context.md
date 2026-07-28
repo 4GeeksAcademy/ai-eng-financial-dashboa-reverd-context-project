@@ -63,7 +63,7 @@ No hay autenticación, ni WebSockets, ni caché intermedia entre frontend y back
 | `backend/app/main.py` | Instancia de FastAPI, configuración CORS, inclusión del router. |
 | `backend/app/routes.py` | Modelos Pydantic, generación de datos mock, filtros, y todos los endpoints. |
 | `backend/tests/conftest.py` | Configuración de pytest: agrega directorio raíz al `sys.path`. |
-| `backend/tests/test_routes.py` | 10 tests funcionales con `TestClient` de FastAPI (generación, filtros, endpoints, B2B/B2C). |
+| `backend/tests/test_routes.py` | 15 tests funcionales con `TestClient` de FastAPI (generación, filtros, endpoints, B2B/B2C). |
 | `backend/Dockerfile` | Imagen Python 3.13-slim con debugpy y uvicorn --reload. |
 | `backend/requirements.txt` | Dependencias Python. |
 
