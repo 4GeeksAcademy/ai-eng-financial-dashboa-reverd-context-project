@@ -20,7 +20,7 @@ describe("dashboard accessibility", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
     const { container } = render(<App />);
 
-    expect(screen.getByRole("status").textContent).toBe("Loading financial data");
+    expect(screen.getByRole("status", { name: "Financial data status" }).textContent).toBe("Loading financial data");
     expect(screen.getByRole("region", { name: "Key performance indicators" }).getAttribute("aria-busy")).toBe("true");
     expect(container.querySelector('[data-slot="skeleton"]')).not.toBeNull();
     expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
@@ -46,7 +46,7 @@ describe("dashboard accessibility", () => {
     expect(within(table).getByText("$250")).toBeTruthy();
     expect(within(table).getByText("75.0%")).toBeTruthy();
     expect(screen.getByRole("region", { name: "Financial charts" }).getAttribute("aria-busy")).toBe("false");
-    expect(screen.getByRole("status").textContent).toBe("Financial data loaded");
+    expect(screen.getByRole("status", { name: "Financial data status" }).textContent).toBe("Financial data loaded");
   });
 
   it("announces API failures in their language", async () => {
@@ -56,7 +56,7 @@ describe("dashboard accessibility", () => {
     const alert = await screen.findByRole("alert");
     expect(alert.getAttribute("lang")).toBe("es");
     expect(alert.textContent).toContain("No se pudo cargar");
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Financial data unavailable"));
+    await waitFor(() => expect(screen.getByRole("status", { name: "Financial data status" }).textContent).toBe("Financial data unavailable"));
     expect(screen.queryByText("Monthly financial data")).toBeNull();
   });
 
@@ -64,7 +64,7 @@ describe("dashboard accessibility", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => [] }));
     render(<App />);
 
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Financial data loaded"));
+    await waitFor(() => expect(screen.getByRole("status", { name: "Financial data status" }).textContent).toBe("Financial data loaded"));
     expect(screen.queryByRole("table", { hidden: true })).toBeNull();
   });
 });

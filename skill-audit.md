@@ -125,3 +125,118 @@ audit fix was attempted. No browser automation, Lighthouse or screen reader
 tool is exposed in this session. Live contrast, real keyboard traversal/traps,
 zoom, high contrast and screen-reader behavior remain unverified. DOM tests
 and CSS inspection are not a WCAG compliance claim.
+
+## React rule classification
+
+This inventory covers every installed rule file, excluding the template and
+section index. Applicable does not imply a defect: compliant patterns are
+explicitly retained. Adaptable means a supported Vite/React equivalent, not
+installing Next.js or using its private conventions.
+
+Locations: A = [App](frontend/src/App.tsx), F =
+[financial utilities](frontend/src/lib/financial-utils.ts), C = existing
+[income chart](frontend/src/components/dashboard/income-outcome-chart.tsx) and
+[profit chart](frontend/src/components/dashboard/profit-percent-chart.tsx),
+H = [HTML entry](frontend/index.html), M = [React entry](frontend/src/main.tsx).
+
+| Rule | Classification | File / change or reason |
+| --- | --- | --- |
+| async-cheap-condition-before-await | N/A | A: no remote flag or async condition to short-circuit. |
+| async-defer-await | Applicable, compliant | A: response JSON is only read after response.ok. |
+| async-parallel | N/A | A: only one API request; response.json depends on fetch. |
+| async-dependencies | N/A | A: no graph of partially dependent requests. |
+| async-api-routes | N/A | Backend is Python, not a React/Next API route. |
+| async-suspense-boundaries | N/A | No SSR streaming. Client Suspense below serves bundle loading, not server streaming. |
+| bundle-barrel-imports | Adaptable, retained | A/C/KPIs: Vite tree-shakes public ESM imports. Do not force unverified untyped Lucide/Recharts deep paths; no optimizePackageImports API in Vite. |
+| bundle-analyzable-paths | Applicable, compliant | A: both new import() paths are literal, not dynamic directory expressions. |
+| bundle-dynamic-imports | Adaptable, applied | A: React.lazy + Suspense replace static chart imports; no next/dynamic. |
+| bundle-defer-third-party | N/A | No analytics, tracking or logging SDK. |
+| bundle-conditional | Applicable, applied | A: chart modules are requested only after initial API loading, not for skeletons. |
+| bundle-preload | N/A | No route or hover-triggered expensive feature to preload. |
+| server-auth-actions | N/A | No React server actions. |
+| server-cache-react | N/A | No React server request lifecycle. |
+| server-cache-lru | N/A | No React server cache. Python mock caching is outside this skill's frontend scope. |
+| server-dedup-props | N/A | No RSC serialization. |
+| server-hoist-static-io | N/A | No server-rendered fonts or logos. |
+| server-no-shared-module-state | N/A | No SSR request-local state. |
+| server-serialization | N/A | No server/client React boundary. |
+| server-parallel-fetching | N/A | No server component tree. |
+| server-parallel-nested-fetching | N/A | No server component requests or per-item async fetching. |
+| server-after-nonblocking | N/A | No Next server request lifecycle or after(). |
+| client-swr-dedup | N/A | A: one API consumer, no repeated production subscriptions/revalidation. StrictMode's development effect replay alone does not justify adding a cache library. |
+| client-event-listeners | N/A | No application global listeners. |
+| client-passive-event-listeners | N/A | No application wheel/touch listeners. |
+| client-localstorage-schema | N/A | No localStorage persistence. |
+| rerender-defer-reads | Applicable, compliant | A: all subscribed state is needed to render. |
+| rerender-memo | N/A | No measured repeated expensive render; do not add speculative memo(). |
+| rerender-memo-with-default-value | N/A | No default array/object prop passed to a memoized child. |
+| rerender-dependencies | Applicable, compliant | A: mount effect has no unstable object dependencies. |
+| rerender-derived-state | N/A | No high-frequency state source needing boolean subscriptions. |
+| rerender-derived-state-no-effect | Applicable, compliant | A: status text and table visibility are derived inline. KPIs/monthly arrays are fetched-result projections, not duplicated raw movement state. |
+| rerender-functional-setstate | N/A | A: setters replace results; none depend on previous state. |
+| rerender-lazy-state-init | N/A | A: initial state values are cheap literals/null. |
+| rerender-simple-expression-in-memo | Applicable, compliant | A/C: inexpensive booleans are not wrapped in useMemo. |
+| rerender-split-combined-hooks | N/A | No combined custom hook with independent computations. |
+| rerender-move-effect-to-event | N/A | A: mount fetch is not caused by an interaction. |
+| rerender-transitions | N/A | No competing urgent input and expensive state update. |
+| rerender-use-deferred-value | N/A | No search/filter input coupled to expensive rendering. |
+| rerender-use-ref-transient-values | N/A | No pointer/scroll-driven transient values. |
+| rerender-no-inline-components | Applicable, compliant | A/C: components/lazy definitions are module-scoped. |
+| rendering-animate-svg-wrapper | N/A | No application CSS transform animation on SVG. |
+| rendering-content-visibility | N/A | Dashboard has two charts, not a long offscreen list. |
+| rendering-hoist-jsx | Applicable, applied | A: shared static chartFallback JSX is module-scoped. |
+| rendering-svg-precision | N/A | Chart paths are generated by Recharts; no authored high-precision SVG path to simplify. |
+| rendering-hydration-no-flicker | N/A | M: createRoot, not hydrateRoot. |
+| rendering-hydration-suppress-warning | N/A | M: no hydration mismatches. |
+| rendering-activity | N/A | Native details supplies the small disclosure; no expensive hidden React view. |
+| rendering-conditional-render | Applicable, compliant | A: conditional content uses ternaries, so no stray 0 nodes. |
+| rendering-usetransition-loading | N/A | A: initial mount request, not an interactive transition/action. Retain explicit initial busy state. |
+| rendering-resource-hints | Adaptable, compliant | H/build: Vite emits modulepreload for shared chunks and dynamic-import dependency preloading; no external font/API origin to preconnect. |
+| rendering-script-defer-async | Applicable, compliant | H: type=module entry is deferred by the browser. |
+| js-batch-dom-css | Applicable, compliant | A/C: classes/styles are declarative; no sequential imperative DOM writes. |
+| js-index-maps | Applicable, compliant | F: monthlyMap indexes movements in one pass. |
+| js-cache-property-access | N/A | No repeatedly traversed deep properties in a hot loop. |
+| js-cache-function-results | N/A | No measured expensive repeated pure computation; do not add an unbounded money-value cache. |
+| js-cache-storage | N/A | No storage/cookie reads. |
+| js-combine-iterations | Applicable, applied | F: computeKPIs uses one pass instead of two filter/reduce chains; no temporary filtered arrays. |
+| js-length-check-first | N/A | No expensive array equality comparison. |
+| js-early-exit | Applicable, compliant | C: tooltips return early when inactive/empty. |
+| js-hoist-regexp | N/A | No RegExp constructed during render or in loops. |
+| js-min-max-loop | N/A | F: sorting month keys is necessary chronological ordering, not sorting to obtain min/max. |
+| js-set-map-lookups | Applicable, compliant | F: monthlyMap provides indexed lookup; no repeated array search. |
+| js-tosorted-immutable | Applicable, compliant | F: Object.keys creates a fresh array before sort; props are not mutated. |
+| js-flatmap-filter | N/A | No map followed by filtering mapped results. |
+| js-request-idle-callback | N/A | No noncritical background task; financial values are primary content. |
+| advanced-effect-event-deps | N/A | No useEffectEvent. |
+| advanced-event-handler-refs | N/A | No callback-driven long-lived listener effect. |
+| advanced-init-once | N/A | No global initialization inside the App effect; data fetching is component lifecycle work. |
+| advanced-use-latest | N/A | No stale callback subscription requiring a latest-value ref. |
+
+### Vite-specific adaptation checks
+
+| Requested consideration | Classification | Evidence / decision |
+| --- | --- | --- |
+| next/image -> img dimensions/lazy loading | N/A | No rendered HTML img in frontend/src. Do not introduce an unused image component. |
+| next/font -> font-display: swap / font preload | N/A | No font download, @font-face or external font stylesheet. A CSS family name alone does not download Inter. |
+| Page title / meta | N/A for this skill | H has lang, viewport and a generic title; this installed skill contains no metadata/title rule. Leave unchanged to respect instruction-level traceability rather than claim an invented rule. |
+| Memoization / re-renders | Applicable, compliant | No new useMemo/useCallback/memo without evidence; derived flags remain inline. |
+| Deferred bundle | Adaptable, applied | React.lazy/Suspense, static import paths, fixed-height and named loading placeholders. |
+
+### React verification
+
+From frontend/: npm test passes 10 tests; npm run build and npm run lint pass
+without warnings. With unchanged dependencies from the a11y checkpoint, the
+entry chunk falls from 585.49 kB to 188.91 kB (60.15 kB gzip); shared eager
+chunks are 39.48 kB and 0.98 kB. This is entry-chunk reduction, not total
+JavaScript removal. Recharts is deferred into a 342.29 kB shared chart chunk
+and two chart chunks (9.71 kB / 6.58 kB). The >500 kB warning is eliminated
+without changing warning thresholds. No Next.js, next/image, next/font or
+Next config was introduced. Live browser network/layout checks remain unverified.
+
+The rule-inventory check confirms 70/70 installed rules have classification rows.
+The editor reports no errors in the changed TSX, TS or CSS files.
+Vite is available at http://localhost:5173/ (HTTP 200). Its existing
+http://backend:8000 proxy returns HTTP 502 in this standalone container session;
+populated data in a real browser requires the documented docker compose setup.
+The 10 automated tests use mocked API responses. No proxy or backend changes
+were made, and no push was performed.
