@@ -8,7 +8,7 @@ import {
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "@/lib/financial-types";
-import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
+import { computeKPIs, computeMonthlyData, formatCurrency, formatPercent } from "@/lib/financial-utils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -49,22 +49,56 @@ function App() {
           <DashboardHeader period="2024 - Full Year" />
 
           {error ? (
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
+            <div role="alert" lang="es" className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
               {error}
             </div>
           ) : null}
 
-          <section aria-label="Key performance indicators">
+          <p role="status" className="sr-only">
+            {loading ? "Loading financial data" : error ? "Financial data unavailable" : "Financial data loaded"}
+          </p>
+
+          <section aria-label="Key performance indicators" aria-busy={loading}>
             <KPIRow metrics={metrics} loading={loading} />
           </section>
 
           <section
             aria-label="Financial charts"
+            aria-busy={loading}
             className="grid grid-cols-1 gap-4 xl:grid-cols-2"
           >
             <IncomeOutcomeChart data={monthlyData} loading={loading} />
             <ProfitPercentChart data={monthlyData} loading={loading} />
           </section>
+
+          {!loading && !error && monthlyData.length > 0 ? (
+            <details>
+              <summary className="min-h-6 cursor-pointer">Monthly financial data</summary>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <caption className="sr-only">Monthly income, outcome and profit margin</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="p-2">Month</th>
+                      <th scope="col" className="p-2">Income</th>
+                      <th scope="col" className="p-2">Outcome</th>
+                      <th scope="col" className="p-2">Profit margin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {monthlyData.map((point) => (
+                      <tr key={point.month}>
+                        <th scope="row" className="p-2 whitespace-nowrap">{point.month}</th>
+                        <td className="p-2">{formatCurrency(point.income)}</td>
+                        <td className="p-2">{formatCurrency(point.outcome)}</td>
+                        <td className="p-2">{formatPercent(point.profitPercent)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          ) : null}
         </div>
       </div>
     </main>

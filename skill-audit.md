@@ -95,3 +95,33 @@ No warnings are suppressed or size thresholds increased.
 The global Copilot instruction and customization skill paths supplied by the
 environment were excluded from Copilot reads. Local AGENTS.md, all local rules,
 all memory-bank files and both installed SKILL.md files were reviewed.
+
+## Accessibility findings
+
+Locations below refer to the pre-edit installation commit 05b0744.
+
+| Source location | Finding / disposition | Skill instruction |
+| --- | --- | --- |
+| frontend/src/App.tsx:51 | Added role=alert and lang=es to the existing Spanish error. | Error handling 3.3.1; Page language 3.1.1 |
+| frontend/src/App.tsx:56 | Added persistent status region and aria-busy to data sections. | Live regions 4.1.3; ARIA usage 4.1.2 |
+| frontend/src/App.tsx:65 | Added a native details/summary disclosure containing all monthly chart values, caption and scoped table headers. | Text alternatives 1.1; Keyboard accessible 2.1 |
+| frontend/src/index.css:123 | Added currentColor focus-visible outline for chart focus targets and native controls. | Focus visible 2.4.7 |
+| frontend/src/index.css:123 | Added reduced-motion override for CSS animations/transitions. | Motion 2.3 |
+| frontend/src/index.css:58 | No palette change: neutral OKLCH estimate is 4.52:1 on muted and higher on card; no demonstrated failure. Actual rendered contrast remains unverified. | Color contrast 1.4.3 requires evidence, not speculative palette changes |
+| frontend/src/components/dashboard/kpi-card.tsx:61; dashboard-header.tsx:12 | No change: Lucide already emits aria-hidden=true, verified in the page test. Icons repeat adjacent text; no icon-only buttons or HTML images exist. | Text alternatives 1.1 |
+| frontend/src/App.tsx:46 | No repeated navigation, forms or dialogs; no invented skip navigation or focus trap. Native disclosure preserves focus order. | Keyboard accessible 2.1; Skip links 2.4.1; ARIA usage 4.1.2 |
+| frontend/src/App.test.tsx | Added RTL tests for loading, data, error and empty states, native disclosure, headers, values and decorative SVG semantics. | Testing checklist: automated testing |
+
+### Accessibility verification
+
+The documented npm test passes 9 tests; npm run build and npm run lint pass.
+No new lint warnings. The existing oversized chunk warning remains (585.49 kB).
+Installing the RTL/jsdom dev dependencies with npm install resolved the declared
+dependency ranges again (Vite 8.0.8 rather than the preinstalled 8.3.4); therefore
+the baseline size difference is NOT attributed to accessibility improvements.
+The configLoader warning does not occur with this resolved Vite version.
+Npm reported 13 dependency vulnerabilities (1 low, 5 moderate, 7 high); no broad
+audit fix was attempted. No browser automation, Lighthouse or screen reader
+tool is exposed in this session. Live contrast, real keyboard traversal/traps,
+zoom, high contrast and screen-reader behavior remain unverified. DOM tests
+and CSS inspection are not a WCAG compliance claim.
