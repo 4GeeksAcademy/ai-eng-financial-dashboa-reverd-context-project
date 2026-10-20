@@ -240,3 +240,81 @@ http://backend:8000 proxy returns HTTP 502 in this standalone container session;
 populated data in a real browser requires the documented docker compose setup.
 The 10 automated tests use mocked API responses. No proxy or backend changes
 were made, and no push was performed.
+
+## Ecosystem extension: vitest
+
+Selected antfu/skills@vitest because it matches the existing Vitest runner and
+closes the component-test gap in local rule test-react-components.md without
+adding a framework or changing production behavior.
+
+Commands, from the repository root:
+
+```sh
+npx skills find vitest
+npx skills find typescript
+npx skills add antfu/skills --skill vitest --agent github-copilot --yes
+npx skills list --agent github-copilot
+```
+
+### Discovery results
+
+| Query | Skill | Repository / owner | Installs |
+| --- | --- | --- | --- |
+| vitest | vitest (selected) | antfu/skills | 41.6K |
+| vitest | javascript-testing-patterns | wshobson/agents | 20.3K |
+| vitest | vue-testing-best-practices | vuejs-ai/skills | 13K |
+| vitest | angular-testing | analogjs/angular-skills | 6.3K |
+| vitest | react-testing | affaan-m/ecc | 5.9K |
+| vitest | vitest | pproenca/dot-skills | 5.8K |
+| vitest | testing | lobehub/lobehub | 4.3K |
+| vitest | test-guard | amelnagdy/guard-skills | 4.1K |
+| vitest | turborepo-monorepo | giuseppe-trisciuoglio/developer-kit | 4K |
+| vitest | vitest | onmax/nuxt-skills | 3.1K |
+| vitest | vitest | supabase/supabase | 2.8K |
+| vitest | vitest | sentimony/skills | 2.5K |
+| vitest | vitest-midscene-e2e | web-infra-dev/midscene-skills | 2K |
+| vitest | unit-test-vue-pinia | github/awesome-copilot | 1.8K |
+| vitest | vitest | jezweb/claude-skills | 1.7K |
+| vitest | vitest-testing | secondsky/claude-skills | 1.2K |
+| vitest | vitest | bobmatnyc/claude-mpm-skills | 928 |
+| vitest | encore-testing | encoredev/skills | 775 |
+| vitest | vitest | hairyf/skills | 733 |
+| vitest | vitest-testing | existential-birds/beagle | 466 |
+| typescript | migrate-to-shoehorn | mattpocock/skills | 460.7K |
+| typescript | setup-ts-deep-modules | mattpocock/skills | 352.5K |
+| typescript | mcp-builder | anthropics/skills | 128.6K |
+| typescript | better-auth-best-practices | better-auth/skills | 124.8K |
+| typescript | convex | convex/agent-skills | 105.9K |
+| typescript | typescript-advanced-types | wshobson/agents | 90.2K |
+| typescript | mastra | mastra-ai/skills | 77K |
+| typescript | fastify-best-practices | mcollina/skills | 75.3K |
+| typescript | expo-module | expo/skills | 43.4K |
+| typescript | mcp-apps-builder | mcp-use/mcp-use | 32K |
+| typescript | create-auth | better-auth/skills | 29.3K |
+| typescript | gemini-api-dev | google-gemini/gemini-skills | 24.6K |
+| typescript | upstash-redis-js | upstash/skills | 20.7K |
+| typescript | upstash-ratelimit-js | upstash/skills | 20.3K |
+| typescript | expo-migrate-module | expo/skills | 18K |
+| typescript | langchain-dependencies | langchain-ai/langchain-skills | 15.7K |
+| typescript | typescript-pro | jeffallan/claude-skills | 13.9K |
+| typescript | javascript-typescript-jest | github/awesome-copilot | 13.1K |
+| typescript | typescript-expert | sickn33/agentic-awesome-skills | 12.5K |
+| typescript | typescript-mcp-server-generator | github/awesome-copilot | 12K |
+
+### Instruction-to-change evidence
+
+The installed skill targets Vitest 5.0.1; this project remains on Vitest 4.1.4.
+Only compatible APIs were used; no vi.when, aroundEach or runner upgrade.
+
+| Skill instruction | Directed change |
+| --- | --- |
+| references/advanced-environments.md: per-file jsdom environment | All five new dashboard test files use the existing jsdom dependency. |
+| references/core-hooks.md: afterEach teardown | Every new test file explicitly cleans up its DOM after each case. |
+| references/features-mocking.md: top-level partial module mock with importOriginal | Chart tests preserve real Recharts and fix only ResponsiveContainer dimensions to 800x280. No mocked chart implementation or global warning suppression. |
+| SKILL.md: Test API and Expect API | Explicit imports and assertions cover KPICard variants/loading, KPIRow values/loading/null metrics, supplied header period, chart loading/empty/data states and positive/negative margins. |
+
+Verification: npm test passes 26 tests in 7 files; npm run build and npm run
+lint pass with no warnings. These are the existing frontend/package.json
+scripts. The bundle is unchanged from f97f06f (188.91 kB entry, 342.29 kB
+deferred Recharts chunk). No production or dependency files changed. Header
+has no loading/error API; errors remain covered by the existing App test.
