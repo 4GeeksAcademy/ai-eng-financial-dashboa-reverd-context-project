@@ -318,3 +318,71 @@ lint pass with no warnings. These are the existing frontend/package.json
 scripts. The bundle is unchanged from f97f06f (188.91 kB entry, 342.29 kB
 deferred Recharts chunk). No production or dependency files changed. Header
 has no loading/error API; errors remain covered by the existing App test.
+
+## Internal skill trial: financial-dashboard-qa
+
+Date: 2026-10-20. Loaded .skills/financial-dashboard-qa/SKILL.md explicitly,
+then applied its steps to main (cf5ef35) ... feature/agent-skills (91156cd)
+plus the untracked internal skill. This path is deliberately not described as
+automatic Copilot discovery; future invocations must load the file explicitly.
+
+The gap addressed is this repo's combined Vite/FastAPI merge checklist: real
+commands, local rules, legacy provenance and direct-vs-proxied API health.
+Community accessibility, React performance and Vitest instructions do not
+encode these project-specific acceptance requirements.
+
+### Applied checks
+
+| Check / command (repository root) | Result |
+| --- | --- |
+| git diff --name-status main...HEAD; git diff HEAD; untracked inventory | Reviewed branch scope: three community skills/lock, audit, frontend deps, App/CSS/calculation changes and component tests; no backend implementation changes. Internal SKILL.md is the only new implementation-review input in the worktree. |
+| npm --prefix frontend test | Exit 0; 26 tests, 7 files. |
+| npm --prefix frontend run build | Exit 0; no warnings, 188.91 kB entry / 342.29 kB deferred Recharts chunk. |
+| npm --prefix frontend run lint | Exit 0; no warnings. |
+| docker compose exec -T backend pytest | Exit 0; 15 passed. One StarletteDeprecationWarning (TestClient/httpx); backend requirements and code are identical to main. The warning is recorded, not suppressed; no prior measured backend warning baseline was available. |
+| curl localhost:8000/health | HTTP 200; status=ok. |
+| curl localhost:8000/api/metrics + JSON schema check | HTTP 200; 360 nonempty movements with all five expected fields. |
+| curl localhost:5173/api/metrics + same check | HTTP 200; 360 movements. Proxy connectivity is now working. |
+| git diff --check main...HEAD; git diff --check | Exit 0. |
+| YAML parser + section/rule inventory check | Valid frontmatter, all five required sections, 10/10 local rule rows. |
+
+The running standalone Vite now resolves backend via the environment mapping
+added by the user, not a tracked proxy/Compose change. Earlier HTTP 502 notes
+above are historical, not the current connectivity result. No /etc/hosts edit
+was made during this skill trial. jsdom and curl are not browser/a11y audits.
+
+### Local rule results
+
+LEGACY means an existing violation, not compliance or an approved waiver.
+The owning files for the backend, header, charts and mock data are byte-for-byte
+unchanged from main (git diff --quiet main -- <owning paths>, exit 0).
+For the modified App file, git show main:frontend/src/App.tsx confirms the same
+catch at base line 35 and fixed period at base line 49; their source lines were
+not changed by this branch. Component tests resolve the prior M10 gap.
+
+| Local rule | Status | Current evidence | Action before an unqualified merge approval |
+| --- | --- | --- | --- |
+| no-cors-wildcard.md | LEGACY | backend/app/main.py:9 uses wildcard with credentials. | Configure explicit allowed origins and test rejected origins. |
+| separate-dev-prod-dockerfile.md | LEGACY | backend/Dockerfile:12 runs debugpy/reload; Compose uses that file. | Separate dev/prod Dockerfiles and point Compose at development. |
+| pin-backend-dependencies.md | LEGACY | backend/requirements.txt:1 has no == pins; all six entries are unpinned. | Validate/pin compatible backend versions, including the TestClient deprecation. |
+| cache-mock-data-generation.md | LEGACY | backend/app/routes.py:255 and seven other handlers regenerate movements. | Reuse module-level generated data with behavior tests. |
+| extract-business-type-filter.md | LEGACY | backend/app/routes.py:278 duplicates filtering; filter_movements has no business_type argument. | Centralize the filter and retain endpoint tests. |
+| no-dead-code.md | LEGACY | frontend/src/lib/mock-data.ts:3 is its only mockMovements/mock-data reference. | Remove the unconsumed dataset in an authorized implementation change. |
+| log-real-errors-frontend.md | LEGACY | frontend/src/App.tsx:47 still discards the original error. | Log the original error and expose useful status, with request-error tests. |
+| derive-period-from-data.md | LEGACY | frontend/src/App.tsx:61 and dashboard-header.tsx:7 still hardcode a year. | Fetch facets and derive the period from min_date/max_date. |
+| extract-chart-tooltip.md | LEGACY | income-outcome-chart.tsx:33 and profit-percent-chart.tsx:32 define CustomTooltip separately. | Extract components/ui/chart-tooltip.tsx with shared formatting tests. |
+| test-react-components.md | PASS | All five dashboard components now have direct RTL tests; App covers fetch errors. | Keep tests passing; loading/error is N/A for the static header. |
+
+### Trial decision and refinement
+
+Executable gates: PASS (backend deprecation explicitly recorded).
+New regressions found in this review: none. Overall merge decision: BLOCKED
+under this strict checklist because nine local requirements remain unmet.
+This is not a request to silently fix them in the skills/documentation task.
+
+The trial refined the skill to execute bounded-output JSON checks with pipefail
+instead of dumping complete arrays, and to record dependency deprecations
+without suppression or invented baseline claims. The revised YAML/sections
+and both live JSON checks were rerun successfully. English commit conventions
+match the observed history, and the applied community skill is cited in its
+commit body. No push was performed.
