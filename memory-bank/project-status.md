@@ -1,6 +1,6 @@
 # Project Status — Financial Dashboard
 
-*Última actualización: 2026-07-28*
+*Última actualización: 2026-10-20*
 
 ---
 
@@ -11,7 +11,9 @@
 - 2 gráficos de líneas Recharts (Income vs Outcome, Profit Margin %)
 - Estado de carga (Skeleton), estado vacío, estado de error
 - Tema oscuro con shadcn/ui + Tailwind v4
-- Accesibilidad básica con `aria-label` en secciones
+- Anuncios de carga/error, regiones con `aria-busy` y tabla mensual desplegable con encabezados semánticos
+- Foco visible y preferencia de movimiento reducido; sin auditoría visual o de lector de pantalla completada
+- Gráficos diferidos con React.lazy/Suspense y cálculo de KPIs en un recorrido
 - Evidencia: `frontend/src/App.tsx`, `frontend/src/components/dashboard/`
 
 ### API REST completa (backend)
@@ -27,6 +29,14 @@
 - Puerto de debug remoto (5678) para Python
 - Evidencia: `docker-compose.yml`, `frontend/vite.config.ts`
 
+### Línea base de calidad verificada
+- `npm --prefix frontend run build` y `npm --prefix frontend run lint`: pasan sin warnings.
+- `npm --prefix frontend test`: 26 tests en 7 archivos, incluidos los cinco componentes principales y los estados de petición de App.
+- `docker compose exec -T backend pytest`: 15 tests pasan; una advertencia de deprecación de TestClient/httpx con dependencias backend sin pin.
+- Backend y proxy Vite devuelven HTTP 200 con 360 movimientos válidos en esta sesión; el usuario añadió resolución local de `backend` para Vite standalone.
+- Bundle de entrada: 188,91 kB; Recharts diferido: 342,29 kB. No representa el tamaño total descargado ni una eliminación de la dependencia.
+- Evidencia completa: `memory-bank/progress.md`, `skill-audit.md`. Skill interna: `.skills/financial-dashboard-qa/SKILL.md`.
+
 ---
 
 ## Gaps conocidos
@@ -39,19 +49,20 @@ Basados en el audit de ingeniería (`practices-analysis.md`):
 
 ### Fiabilidad
 - **Dependencias sin pin**: `requirements.txt` no especifica versiones. Builds no son reproducibles. (`backend/requirements.txt`)
-- **Error handling opaco**: errores de fetch en frontend se descartan, sin log ni info de status code. (`frontend/src/App.tsx:33-37`)
+- **Error handling opaco**: errores de fetch en frontend se descartan, sin log ni info de status code. (`frontend/src/App.tsx:47`)
 
 ### Mantenibilidad
 - **Código muerto**: `mock-data.ts` no es importado por ningún archivo. (`frontend/src/lib/mock-data.ts`)
 - **Duplicación de filtrado**: `business_type` se filtra inline en3+ endpoints en lugar de reusar `filter_movements()`. (`backend/app/routes.py:370,386,281`)
 - **Duplicación de tooltip**: `CustomTooltip` definido por separado en ambos charts. (`income-outcome-chart.tsx:24-43`, `profit-percent-chart.tsx:24-42`)
-- **Período hardcodeado**: "2024 - Full Year" escrito en código, no derivado de datos. (`App.tsx:48`)
+- **Período hardcodeado**: "2024 - Full Year" escrito en código, no derivado de datos. (`frontend/src/App.tsx:61`)
 
 ### Performance
 - **Regeneración redundante**: cada endpoint genera360 registros mock independientemente. (`backend/app/routes.py` —8 llamadas a `generate_mock_movements`)
 
 ### Testing
-- **Sin tests de componentes React**: solo se testean funciones puras. Un componente puede romper su renderizado sin que se detecte. (`frontend/src/lib/` —único directorio con tests)
+- **Gap de componentes resuelto**: cinco archivos `.test.tsx` en `frontend/src/components/dashboard/` prueban carga/datos/vacío cuando aplica; `frontend/src/App.test.tsx` prueba errores y tabla accesible. Los gráficos conservan Recharts real, fijando únicamente el contenedor responsivo en jsdom.
+- **Pendiente**: pruebas reales de navegador, teclado, contraste y lector de pantalla. La skill interna distingue gates ejecutables aprobados de cumplimiento de reglas: nueve incumplimientos heredados siguen bloqueando una aprobación estricta de merge.
 
 ---
 
@@ -92,5 +103,7 @@ Ordenadas por impacto/riesgo, derivadas de las reglas en `.agents/rules/`:
 9. **R9 — Extraer CustomTooltip** (`extract-chart-tooltip.md`)
    Crear `ChartTooltip` compartido. Reduce duplicación entre ambos charts.
 
+### Completado
+
 10. **R10 — Testear componentes React** (`test-react-components.md`)
-    Agregar tests de renderizado con React Testing Library. Cubre gaps de testing visual.
+   Resuelto en `91156cd` aplicando `antfu/skills@vitest`: cobertura directa de los cinco componentes, sin dependencias nuevas ni cambios de producción. No equivale a testing visual de navegador.
